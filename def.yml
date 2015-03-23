@@ -1,0 +1,25 @@
+---
+type: ecomplexity
+file_pattern: "ecomplexity_aduanas_{location}_{year}.dta"
+fields:
+    location: "r_{location}"
+    entity: p
+    value: V
+    eci: eci
+    pci: pci
+    rca: rca
+    diversity: diversity
+    density: density
+    ubiquity: ubiquity
+    average_ubiquity: av_ubq
+    coi: coi
+    cog: cog
+generated_fields:
+    year: "{year}"
+flags:
+    location_classification:
+        dept: mexico_depts.dta
+        municipios: mexico_depts.dta
+    entity_classification: hs4.tsv
+
+
