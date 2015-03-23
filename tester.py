@@ -112,3 +112,7 @@ if __name__ == "__main__":
             sys.exit(1)
         if len(extra_fields) != 0:
             logging.warning("File Name: %s, Extra fields: %s", file_name, extra_fields)
+
+        df = df.rename(columns={v:k for k,v in field_mappings.items()})
+        print "Locations: ", df.location.nunique()
+        print "Entities: ", df.entity.nunique()
