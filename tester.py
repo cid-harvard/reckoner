@@ -8,7 +8,8 @@ import pprint
 import pandas as pd
 
 import logging
-logging.basicConfig(format='%(levelname)s:\n%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(levelname)s:  %(message)s', level=logging.INFO)
+logging.addLevelName(logging.INFO, "\033[1;32m%s\033[1;0m" % logging.getLevelName(logging.INFO))
 logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
 logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
 
@@ -87,8 +88,9 @@ if __name__ == "__main__":
     file_regex = RegexFormatter().format_to_regex(file_pattern)
     variations = [re.compile(file_regex).match(f).groupdict()
                   for f in file_names]
-    logging.info("Variations gathered from files: %s", pprint.pformat(variations))
+    logging.info("Variations gathered from files:\n %s", pprint.pformat(variations))
 
+    totals = {}
 
     for variation in variations:
 
@@ -113,6 +115,31 @@ if __name__ == "__main__":
         if len(extra_fields) != 0:
             logging.warning("File Name: %s, Extra fields: %s", file_name, extra_fields)
 
+        # Standardize column names
         df = df.rename(columns={v:k for k,v in field_mappings.items()})
-        print "Locations: ", df.location.nunique()
-        print "Entities: ", df.entity.nunique()
+
+        # TODO: standardize types?
+
+        # Generate generated columns
+        for k, v in config["generated_fields"].items():
+            df[k] = v.format(**variation)
+
+        # Get summary stats
+        summary = "\nNumber of rows: {}\n".format(len(df.index))
+        summary += "Number of locations: {}\n".format(df.location.nunique())
+        summary += "Number of entities: {}\n".format(df.entity.nunique())
+        summary += "Number of null locations: {}\n".format(df.location.isnull().sum())
+        summary += "Number of null entities: {}\n".format(df.entity.isnull().sum())
+        summary += "Number of null values: {}".format(df.value.isnull().sum())
+        logging.info(summary)
+
+        for k, v in variation.items():
+            if v in totals:
+                totals[v] = totals[v].add(df[k].value_counts(), fill_value=0)
+            else:
+                totals[v] = df[k].value_counts()
+
+
+    for item in totals:
+        totals[item].sort(ascending=False)
+        logging.info("Value counts across all files for: {}\n{}".format(item, totals[item]))
