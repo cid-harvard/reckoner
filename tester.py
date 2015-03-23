@@ -80,15 +80,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Find files that match
-    file_names = GlobFormatter().format(file_pattern)
-    file_names = glob.glob(file_names)
-    logging.info("Found files:\n %s", pprint.pformat(file_names))
+    file_names = glob.glob(GlobFormatter().format(file_pattern))
+    logging.info("Found %d files:\n %s",
+                 len(file_names), pprint.pformat(file_names))
 
     # Extract data from filenames
     file_regex = RegexFormatter().format_to_regex(file_pattern)
     variations = [re.compile(file_regex).match(f).groupdict()
                   for f in file_names]
-    logging.info("Variations gathered from files:\n %s", pprint.pformat(variations))
+    logging.info("Variations gathered from files:\n %s",
+                 pprint.pformat(variations))
 
     totals = {}
 
