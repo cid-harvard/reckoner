@@ -2,8 +2,8 @@
 name: mexico_aduanas
 description: Mexico trade data, imports 2009-2013
 source: INEGI
-type: ecomplexity
 file_pattern: "ecomplexity_aduanas_{location}_{year}.dta"
+type: ecomplexity
 fields:
     location: "r_{location}"
     entity: p
@@ -19,10 +19,16 @@ fields:
     cog: cog
 generated_fields:
     year: "{year}"
-flags:
+config:
     location_classification:
-        dept: mexico_depts.dta
-        municipios: mexico_depts.dta
+        mun:
+            file: NAMES_INEGI_MUNKEY_V2.dta
+            code_field: cve_mun
+            name_field: nom_mun
+        est:
+            file: NAMES_INEGI_MUNKEY_V2.dta
+            code_field: cve_ent
+            name_field: nom_ent
     entity_classification: hs4.tsv
 
 
