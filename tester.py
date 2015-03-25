@@ -272,7 +272,7 @@ if __name__ == "__main__":
         for thing in ["location", "entity"]:
 
             # Select only one col
-            merge_col = df[[thing]]
+            merge_col = df[[thing, "value"]]
 
             # Convert types
             digits = get_classification_configuration(
@@ -300,12 +300,18 @@ if __name__ == "__main__":
                 continue
 
             percent_nonmerged = 100.0 * num_nonmerged / merge_col.shape[0]
+            value_nonmerged = merged[merged["name"].isnull()].value.sum()
+            percent_value_nonmerged = 100.0 * value_nonmerged / merge_col.value.sum()
 
             nonmerged_codes = merged[merged["name"].isnull()][thing].unique()
             summary = "\nNumber of nonmatching rows {}: {}\n".format(classification_name,
                                                                      num_nonmerged)
-            summary = "\nPercent nonmatching rows {}: {}\n".format(classification_name,
+            summary += "Percent nonmatching rows {}: {}\n".format(classification_name,
                                                                    percent_nonmerged)
+            summary += "Value of nonmatching rows {}: {}\n".format(classification_name,
+                                                                   value_nonmerged)
+            summary += "Percent value of nonmatching rows {}: {}\n".format(classification_name,
+                                                                   percent_value_nonmerged)
             summary += "Nonmatching codes: {}\n".format(nonmerged_codes)
             logging.info(summary)
 
