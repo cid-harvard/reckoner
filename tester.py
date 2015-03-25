@@ -203,6 +203,7 @@ if __name__ == "__main__":
 
     # Check that all Location and Entity fields have mappings
     # {"location": ["est", "mun"], "entity": ["4digit"]}
+    classifications = {}
     for field in ["location", "entity"]:
         key = field + "_classification"
         if key not in config["config"]:
@@ -214,7 +215,7 @@ if __name__ == "__main__":
             df_class = process_classification(df_class, classification_config)
             logging.info("Classification system for {}:\n {}"
                          .format(classification, df_class))
-            pass
+            classifications[classification] = df_class
 
     for variation in variations:
 
@@ -257,6 +258,7 @@ if __name__ == "__main__":
             else:
                 totals[v] = df[k].value_counts()
 
+    # Counts of locations / entities across files
     for item in totals:
         totals[item].sort(ascending=False)
         logging.info("Value counts across all files for: {}\n{}".format(item, totals[item]))
