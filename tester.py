@@ -102,15 +102,40 @@ def process_classification(df_class, classification_config):
         name_field = classification_config["name_field"]
         digits = classification_config.get("digits", None)
 
-        # Get rid of fields and lines we don't need
-        df_class = df_class[[code_field, name_field]].drop_duplicates()
-
         # Convert codes to n-digit strings if necessary
         df_class[code_field] = convert_column_type(df_class[code_field], digits)
 
+        # Get rid of fields and lines we don't need
+        df_class = df_class[[code_field, name_field]].drop_duplicates()
+
     elif "code_fields" in classification_config:
-        pass
-        return None
+
+        name_field = classification_config["name_field"]
+
+        code_fields = []
+        for i, field in enumerate(classification_config["code_fields"]):
+
+            # Read field config
+            code_field = field["name"]
+            digits = field.get("digits", None)
+
+            # Fix column
+            df_class[code_field] = convert_column_type(df_class[code_field], digits)
+
+            code_fields.append(code_field)
+
+        # Get rid of fields we don't need
+        df_class = df_class[code_fields + [name_field]]
+
+        # Merge all the fields to get the code
+        def add_str_fields(field):
+            return "".join([field[f] for f in code_fields])
+        df_class["generated_classification"] =\
+            df_class[code_fields].apply(add_str_fields, axis=1)
+
+        # Return only the code and the name
+        df_class = df_class[["generated_classification", name_field]]
+
     else:
         logging.error("""Classification mapping {} must have a code_field or
                          code_fields.""".format(classification_config))

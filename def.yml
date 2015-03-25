@@ -26,7 +26,7 @@ config:
             code_fields:
                 - name: cve_ent
                   digits: 2
-                - name: cve_nom
+                - name: cve_mun
                   digits: 3
             name_field: nom_mun
         est:
