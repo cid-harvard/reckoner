@@ -80,15 +80,17 @@ def dtype_is_numeric(thing):
                            np.float32, np.float64]
 
 
-def convert_column_type(col, digits=None):
+def convert_column_type(col, digits=None, warnings=True):
     if dtype_is_numeric(col):
-        logging.warning(
-            """The classification code field {} is numeric, going to try to
-            automatically convert it into a string.""".format(col.name))
+        if warnings:
+            logging.warning("""The classification code field {} is numeric,
+                            going to try to automatically convert it into a
+                            string.""".format(col.name))
         if digits:
             col = col.map(lambda x: str(int(x)).zfill(digits))
-            logging.warning("""Zero filling from the left to {}
-                            digits""".format(digits))
+            if warnings:
+                logging.warning("""Zero filling from the left to {}
+                                digits""".format(digits))
         else:
             col = col.map(lambda x: str(int(x)))
     return col
@@ -196,15 +198,14 @@ if __name__ == "__main__":
     totals = {}
 
     # Check that all Location and Entity fields have mappings
-    # {"location": ["est", "mun"], "entity": ["4digit"]}
+    # {"location": ["est", "mun"], "entity": ["hs4_4digit"]}
     classifications = {}
     for field in ["location", "entity"]:
-        key = field + "_classification"
-        if key not in config["config"]:
+        if field not in config["classifications"]:
             logging.error("Please supply a classification for {} called {}."
-                          .format(field, key))
+                          .format(field, field))
             sys.exit(1)
-        for classification, classification_config in config["config"][key].items():
+        for classification, classification_config in config["classifications"][field].items():
             df_class = read_file(classification_config["file"])
             df_class = process_classification(df_class, classification_config)
             logging.info("Classification system for {}:\n {}"
@@ -247,12 +248,25 @@ if __name__ == "__main__":
         summary += "Number of null values: {}".format(df.value.isnull().sum())
         logging.info(summary)
 
+        def get_classification_name(thing, variation, classifications):
+            if thing not in variation:
+                return classifications[thing].items()[0][0]
+            else:
+                return variation[thing]
+
         def get_classification(thing, variation, classifications):
-            # if not in variations, get default one (e.g. 4digit)
+            # if not in variations, get default one (e.g. hs4_4digit)
             if thing not in variation:
                 return classifications[thing].items()[0][1]
             else:
                 return classifications[thing][variation[thing]]
+
+        def get_classification_configuration(thing, variation, classifications):
+            if thing not in variation:
+                return config["classifications"][thing].items()[0][1]
+            else:
+                return config["classifications"][thing][variation[thing]]
+
 
         # Calculate match percentages to classifications
         for thing in ["location", "entity"]:
@@ -261,16 +275,30 @@ if __name__ == "__main__":
             merge_col = df[[thing]]
 
             # Convert types
-            import ipdb; ipdb.set_trace()
-            classification_config["digits"]
-            merge_col = convert_column_type(merge_col, digits=n)
+            digits = get_classification_configuration(
+                thing,
+                variation,
+                classifications)["digits"]
+            merge_col[thing] = convert_column_type(
+                merge_col[thing],
+                digits=digits,
+                warnings=False
+            )
 
-            merged = merge_col.merge(
-                get_classification(thing, variation, classifications),
-                left_on=thing, right_index=True, how="left")
+            classification_name = get_classification_name(thing, variation,
+                                                          classifications)
+            classification = get_classification(thing, variation,
+                                                classifications)
+
+            merged = merge_col.merge(classification, left_on=thing,
+                                     right_index=True, how="left")
 
             num_nonmerged = merged["name"].isnull().sum()
-            print num_nonmerged
+            nonmerged_codes = merged[merged["name"].isnull()][thing].unique()
+            summary = "\nNumber of nonmatching {}: {}\n".format(classification_name,
+                                                                num_nonmerged)
+            summary += "Nonmatching codes: {}\n".format(nonmerged_codes)
+            logging.info(summary)
 
             # Codes missing
             # Match percentage

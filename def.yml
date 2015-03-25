@@ -19,8 +19,8 @@ fields:
     cog: cog
 generated_fields:
     year: "{year}"
-config:
-    location_classification:
+classifications:
+    location:
         mun:
             file: NAMES_INEGI_MUNKEY_V2.dta
             code_fields:
@@ -29,13 +29,14 @@ config:
                 - name: cve_mun
                   digits: 3
             name_field: nom_mun
+            digits: 5
         est:
             file: NAMES_INEGI_MUNKEY_V2.dta
             code_field: cve_ent
             name_field: nom_ent
             digits: 2
-    entity_classification:
-        4digit:
+    entity:
+        hs4_4digit:
             file: /Users/makmana/ciddata/mali_metadata/hs4.tsv
             code_field: Code
             name_field: hs4_name_en
