@@ -94,7 +94,12 @@ def convert_column_type(col, digits=None):
     return col
 
 
+def has_nulls(df):
+    return df.isnull().any().any()
+
+
 def process_classification(df_class, classification_config):
+
     if "code_field" in classification_config:
 
         # Read config
@@ -102,30 +107,38 @@ def process_classification(df_class, classification_config):
         name_field = classification_config["name_field"]
         digits = classification_config.get("digits", None)
 
+        # Get rid of fields and lines we don't need
+        df_class = df_class[[code_field, name_field]]
+
+        if has_nulls(df_class):
+            logging.error("""Classification mapping {} contains null values in
+                          relevant columns""".format(classification_config))
+            sys.exit(1)
+
         # Convert codes to n-digit strings if necessary
         df_class[code_field] = convert_column_type(df_class[code_field], digits)
 
-        # Get rid of fields and lines we don't need
-        df_class = df_class[[code_field, name_field]].drop_duplicates()
+        df_class = df_class.drop_duplicates()
+
 
     elif "code_fields" in classification_config:
 
         name_field = classification_config["name_field"]
 
-        code_fields = []
-        for i, field in enumerate(classification_config["code_fields"]):
+        # Get rid of fields we don't need
+        code_fields = [f["name"] for f in classification_config["code_fields"]]
+        df_class = df_class[code_fields + [name_field]]
 
-            # Read field config
+        if has_nulls(df_class):
+            logging.error("""Classification mapping {} contains null values in
+                          relevant columns""".format(classification_config))
+            sys.exit(1)
+
+        # Fix up column types
+        for field in classification_config["code_fields"]:
             code_field = field["name"]
             digits = field.get("digits", None)
-
-            # Fix column
             df_class[code_field] = convert_column_type(df_class[code_field], digits)
-
-            code_fields.append(code_field)
-
-        # Get rid of fields we don't need
-        df_class = df_class[code_fields + [name_field]]
 
         # Merge all the fields to get the code
         def add_str_fields(field):
