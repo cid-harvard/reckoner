@@ -1,3 +1,4 @@
+from collections import defaultdict
 import glob
 import re
 import sys
@@ -93,6 +94,24 @@ if __name__ == "__main__":
 
     totals = {}
 
+    # Find all the possible options for a variation variable
+    variation_options = defaultdict(list)
+    for variation in variations:
+        for k, v in variation.items():
+            variation_options[k].append(v)
+
+    # Check that all Location and Entity fields have mappings
+    # {"location": ["est", "mun"], "entity": ["4digit"]}
+    for field in ["location", "entity"]:
+        key = field + "_classification"
+        if key not in config["config"]:
+            logging.error("Please supply a classification for {} called {}."
+                          .format(field, key))
+            sys.exit(1)
+        for classification in config["config"][key]:
+            pass
+
+
     for variation in variations:
 
         # Load file
@@ -134,12 +153,12 @@ if __name__ == "__main__":
         summary += "Number of null values: {}".format(df.value.isnull().sum())
         logging.info(summary)
 
+        # Add current variation field value counts to running sum
         for k, v in variation.items():
             if v in totals:
                 totals[v] = totals[v].add(df[k].value_counts(), fill_value=0)
             else:
                 totals[v] = df[k].value_counts()
-
 
     for item in totals:
         totals[item].sort(ascending=False)

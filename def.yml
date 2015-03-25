@@ -29,6 +29,8 @@ config:
             file: NAMES_INEGI_MUNKEY_V2.dta
             code_field: cve_ent
             name_field: nom_ent
-    entity_classification: hs4.tsv
-
-
+    entity_classification:
+        4digit:
+            file: hs4.tsv
+            code_field: hs4_code
+            name_field: hs4_name
