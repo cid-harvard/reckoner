@@ -7,6 +7,7 @@ import yaml
 import pprint
 
 import pandas as pd
+import numpy as np
 
 import logging
 logging.basicConfig(format='%(levelname)s:  %(message)s', level=logging.INFO)
@@ -62,6 +63,68 @@ class Ecomplexity(object):
 
 check_type = {"ecomplexity": Ecomplexity()}
 
+
+def read_file(file_name):
+    read_commands = {
+        "dta": pd.read_stata,
+        "csv": pd.read_csv,
+        "tsv": pd.read_table,
+        "txt": pd.read_table,
+    }
+    extension = file_name.rsplit(".", 1)[-1]
+    return read_commands[extension](file_name)
+
+
+def dtype_is_numeric(thing):
+    return thing.dtype in [np.int8, np.int16, np.int32, np.int64, np.float16,
+                           np.float32, np.float64]
+
+
+def convert_column_type(col, digits=None):
+    if dtype_is_numeric(col):
+        logging.warning(
+            """The classification code field {} is numeric, going to try to
+            automatically convert it into a string.""".format(col.name))
+        if digits:
+            col = col.map(lambda x: str(int(x)).zfill(digits))
+            logging.warning("""Zero filling from the left to {}
+                            digits""".format(digits))
+        else:
+            col = col.map(lambda x: str(int(x)))
+    return col
+
+
+def process_classification(df_class, classification_config):
+    if "code_field" in classification_config:
+
+        # Read config
+        code_field = classification_config["code_field"]
+        name_field = classification_config["name_field"]
+        digits = classification_config.get("digits", None)
+
+        # Get rid of fields and lines we don't need
+        df_class = df_class[[code_field, name_field]].drop_duplicates()
+
+        # Convert codes to n-digit strings if necessary
+        df_class[code_field] = convert_column_type(df_class[code_field], digits)
+
+    elif "code_fields" in classification_config:
+        pass
+        return None
+    else:
+        logging.error("""Classification mapping {} must have a code_field or
+                         code_fields.""".format(classification_config))
+        sys.exit(1)
+
+    # Rename columns
+    df_class.columns = ["code", "name"]
+
+    # Make codes the index
+    df_class = df_class.set_index("code")
+
+    return df_class
+
+
 if __name__ == "__main__":
 
     logging.info("Loading config file: %s", sys.argv[1])
@@ -108,22 +171,18 @@ if __name__ == "__main__":
             logging.error("Please supply a classification for {} called {}."
                           .format(field, key))
             sys.exit(1)
-        for classification in config["config"][key]:
+        for classification, classification_config in config["config"][key].items():
+            df_class = read_file(classification_config["file"])
+            df_class = process_classification(df_class, classification_config)
+            logging.info("Classification system for {}:\n {}"
+                         .format(classification, df_class))
             pass
-
 
     for variation in variations:
 
         # Load file
         file_name = file_pattern.format(**variation)
-        read_commands = {
-            "dta": pd.read_stata,
-            "csv": pd.read_csv,
-            "tsv": pd.read_table,
-            "txt": pd.read_table,
-        }
-        extension = file_name.rsplit(".", 1)[-1]
-        df = read_commands[extension](file_name)
+        df = read_file(file_name)
 
         # Check file has all the fields specified
         field_mappings = dict(config["fields"])
