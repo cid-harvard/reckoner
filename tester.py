@@ -315,16 +315,12 @@ if __name__ == "__main__":
             summary += "Nonmatching codes: {}\n".format(nonmerged_codes)
             logging.info(summary)
 
-            # Codes missing
-            # Match percentage
-
-
         # Add current variation field value counts to running sum
         for k, v in variation.items():
             if v in totals:
-                totals[v] = totals[v].add(df[k].value_counts(), fill_value=0)
+                totals[v] = totals[v].add(df[k].value_counts(dropna=False), fill_value=0)
             else:
-                totals[v] = df[k].value_counts()
+                totals[v] = df[k].value_counts(dropna=False)
 
     # Counts of locations / entities across files
     for item in totals:
