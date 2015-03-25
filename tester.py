@@ -299,9 +299,13 @@ if __name__ == "__main__":
             if num_nonmerged == 0:
                 continue
 
+            percent_nonmerged = 100.0 * num_nonmerged / merge_col.shape[0]
+
             nonmerged_codes = merged[merged["name"].isnull()][thing].unique()
-            summary = "\nNumber of nonmatching {}: {}\n".format(classification_name,
-                                                                num_nonmerged)
+            summary = "\nNumber of nonmatching rows {}: {}\n".format(classification_name,
+                                                                     num_nonmerged)
+            summary = "\nPercent nonmatching rows {}: {}\n".format(classification_name,
+                                                                   percent_nonmerged)
             summary += "Nonmatching codes: {}\n".format(nonmerged_codes)
             logging.info(summary)
 
