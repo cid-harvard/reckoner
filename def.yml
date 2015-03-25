@@ -33,6 +33,7 @@ config:
             file: NAMES_INEGI_MUNKEY_V2.dta
             code_field: cve_ent
             name_field: nom_ent
+            digits: 2
     entity_classification:
         4digit:
             file: /Users/makmana/ciddata/mali_metadata/hs4.tsv

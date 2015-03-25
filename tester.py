@@ -195,12 +195,6 @@ if __name__ == "__main__":
 
     totals = {}
 
-    # Find all the possible options for a variation variable
-    variation_options = defaultdict(list)
-    for variation in variations:
-        for k, v in variation.items():
-            variation_options[k].append(v)
-
     # Check that all Location and Entity fields have mappings
     # {"location": ["est", "mun"], "entity": ["4digit"]}
     classifications = {}
@@ -215,7 +209,9 @@ if __name__ == "__main__":
             df_class = process_classification(df_class, classification_config)
             logging.info("Classification system for {}:\n {}"
                          .format(classification, df_class))
-            classifications[classification] = df_class
+            if field not in classifications:
+                classifications[field] = {}
+            classifications[field][classification] = df_class
 
     for variation in variations:
 
@@ -250,6 +246,35 @@ if __name__ == "__main__":
         summary += "Number of null entities: {}\n".format(df.entity.isnull().sum())
         summary += "Number of null values: {}".format(df.value.isnull().sum())
         logging.info(summary)
+
+        def get_classification(thing, variation, classifications):
+            # if not in variations, get default one (e.g. 4digit)
+            if thing not in variation:
+                return classifications[thing].items()[0][1]
+            else:
+                return classifications[thing][variation[thing]]
+
+        # Calculate match percentages to classifications
+        for thing in ["location", "entity"]:
+
+            # Select only one col
+            merge_col = df[[thing]]
+
+            # Convert types
+            import ipdb; ipdb.set_trace()
+            classification_config["digits"]
+            merge_col = convert_column_type(merge_col, digits=n)
+
+            merged = merge_col.merge(
+                get_classification(thing, variation, classifications),
+                left_on=thing, right_index=True, how="left")
+
+            num_nonmerged = merged["name"].isnull().sum()
+            print num_nonmerged
+
+            # Codes missing
+            # Match percentage
+
 
         # Add current variation field value counts to running sum
         for k, v in variation.items():
