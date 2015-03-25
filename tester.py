@@ -294,6 +294,11 @@ if __name__ == "__main__":
                                      right_index=True, how="left")
 
             num_nonmerged = merged["name"].isnull().sum()
+
+            # If everything merges perfectly, no need to tell
+            if num_nonmerged == 0:
+                continue
+
             nonmerged_codes = merged[merged["name"].isnull()][thing].unique()
             summary = "\nNumber of nonmatching {}: {}\n".format(classification_name,
                                                                 num_nonmerged)
