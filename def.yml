@@ -35,6 +35,7 @@ config:
             name_field: nom_ent
     entity_classification:
         4digit:
-            file: hs4.tsv
-            code_field: hs4_code
-            name_field: hs4_name
+            file: /Users/makmana/ciddata/mali_metadata/hs4.tsv
+            code_field: Code
+            name_field: hs4_name_en
+            digits: 4
