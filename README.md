@@ -15,8 +15,9 @@ it figure out what each column means, and then it:
 Installation
 ============
 
-- Run `curl https://raw.githubusercontent.com/cid-harvard/dataset-compliance/master/tester.py > tester.py` to download the script.
-- Then run it with `python tester.py definition_file_name.yml`
+- In a command line, run `curl https://raw.githubusercontent.com/cid-harvard/reckoner/master/reckoner.py > reckoner.py` to download the script.
+- Create a definition file in the same directory as your dataset
+- Then run it with `python tester.py path/to/your/definition_file_name.yml`
 
 
 Example
