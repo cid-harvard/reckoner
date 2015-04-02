@@ -5,62 +5,22 @@ import sys
 import yaml
 import pprint
 
-import pandas as pd
-import numpy as np
-
 import logging
-logging.basicConfig(format='%(levelname)s:  %(message)s', level=logging.INFO)
-logging.addLevelName(logging.INFO, "\033[1;32m%s\033[1;0m" % logging.getLevelName(logging.INFO))
-logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
+logging.basicConfig(
+    format='%(levelname)s:  %(message)s',
+    level=logging.INFO)
+logging.addLevelName(logging.INFO, "\033[1;32m%s\033[1;0m" %
+                     logging.getLevelName(logging.INFO))
+logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" %
+                     logging.getLevelName(logging.WARNING))
+logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" %
+                     logging.getLevelName(logging.ERROR))
+
 
 from helpers import GlobFormatter, RegexFormatter
+from helpers import (dtype_is_numeric, read_file, has_nulls)
 
-
-class Ecomplexity(object):
-
-    REQUIRED = {
-        "year": int,
-        "location": str,
-        "entity": str,
-        "value": float,
-        "eci": float,
-        "pci": float,
-        "rca": float,
-        "diversity": float,
-        "density": float,
-        "ubiquity": float,
-        "average_ubiquity": float,
-        "cog": float,
-        "coi": float,
-    }
-
-    def check_field_mappings(self, mappings):
-        return set(self.REQUIRED) - set(mappings)
-
-    def check_fields(self, field_mappings, df):
-        """Returns missing fields, extra fields"""
-        return (set(field_mappings.values()) - set(df.columns), set(df.columns) - set(field_mappings.values()))
-
-
-check_type = {"ecomplexity": Ecomplexity()}
-
-
-def read_file(file_name):
-    read_commands = {
-        "dta": pd.read_stata,
-        "csv": pd.read_csv,
-        "tsv": pd.read_table,
-        "txt": pd.read_table,
-    }
-    extension = file_name.rsplit(".", 1)[-1]
-    return read_commands[extension](file_name)
-
-
-def dtype_is_numeric(thing):
-    return thing.dtype in [np.int8, np.int16, np.int32, np.int64, np.float16,
-                           np.float32, np.float64]
-
+from file_types import file_types
 
 def convert_column_type(col, digits=None, warnings=True):
     if dtype_is_numeric(col):
@@ -76,10 +36,6 @@ def convert_column_type(col, digits=None, warnings=True):
         else:
             col = col.map(lambda x: str(int(x)))
     return col
-
-
-def has_nulls(df):
-    return df.isnull().any().any()
 
 
 def process_classification(df_class, classification_config):
@@ -158,7 +114,7 @@ if __name__ == "__main__":
     config = yaml.load(open(definition_file_path).read())
 
     file_pattern = config["file_pattern"]
-    checker = check_type[config["type"]]
+    checker = file_types[config["type"]]
     logging.info("Using file pattern: %s", file_pattern)
 
     # Verify we have enough field mappings defined for a data file of the given
