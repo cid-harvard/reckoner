@@ -1,3 +1,4 @@
+import os.path
 import re
 import string
 
@@ -27,6 +28,10 @@ class RegexFormatter(string.Formatter):
         for i in range(0, len(parts), 2):
             parts[i] = re.escape(parts[i])
         return ''.join(parts)
+
+
+def canonical_path(path):
+    return os.path.abspath(os.path.expanduser(path))
 
 
 def dtype_is_numeric(thing):

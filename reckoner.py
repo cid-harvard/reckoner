@@ -18,9 +18,10 @@ logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" %
 
 
 from helpers import GlobFormatter, RegexFormatter
-from helpers import (dtype_is_numeric, read_file, has_nulls)
+from helpers import (dtype_is_numeric, read_file, has_nulls, canonical_path)
 
 from file_types import file_types
+
 
 def convert_column_type(col, digits=None, warnings=True):
     if dtype_is_numeric(col):
@@ -102,9 +103,6 @@ def process_classification(df_class, classification_config):
 
     return df_class
 
-
-def canonical_path(path):
-    return os.path.abspath(os.path.expanduser(path))
 
 if __name__ == "__main__":
 
