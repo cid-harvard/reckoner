@@ -25,9 +25,9 @@ Installation
 Example
 =======
 
-Reckoner requires a yaml file for each dataset you want to check. The format is
-mostly `attribute_name:value`, with tabs to indicate sub elements and dashes to
-indicate list items. Here is the beginning of a real definition file:
+Reckoner requires a definition file for each dataset you want to check. The
+format is mostly `attribute_name:value`, with tabs to indicate sub elements and
+dashes to indicate list items. Here is the beginning of a real definition file:
 
 
 ```yaml
