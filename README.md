@@ -38,12 +38,16 @@ type: ecomplexity
 file_pattern: ecomplexity_aduanas_{location}_{year}.dta
 ```
 
-The first three fields are just general descriptions. The fourth field,
-however, defines all the files in your dataset. It's assumed that all your
-files have a uniform naming scheme. The parts between braces like `{location}`
-are a wildcard match. So, for example, it'll match the filename
-"ecomplexity_aduanas_est_2012.dta" and determine that for that file, `location`
-must be equal to `est` and `year` must be `2012`.
+The first three fields are just general descriptions. The third field specifies
+the file type, and there are a few preset ones. Ecomplexity is one that matches
+the output of our own STATA ecomplexity command. The types of checks that can
+be automatically run depend on the file type.
+
+The fifth field, the pattern, defines all the files in your dataset. It's
+assumed that all your files have a uniform naming scheme. The parts between
+braces like `{location}` are a wildcard match. So, for example, it'll match the
+filename "ecomplexity_aduanas_est_2012.dta" and determine that for that file,
+`location` must be equal to `est` and `year` must be `2012`.
 
 Since we didn’t provide a wildcard in the filename for entities (in our case
 products), it will assume that there is only one level of product aggregation.
