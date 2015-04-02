@@ -1,5 +1,6 @@
 from collections import defaultdict
 import glob
+import os.path
 import re
 import sys
 import string
@@ -165,10 +166,15 @@ def process_classification(df_class, classification_config):
     return df_class
 
 
+def canonical_path(path):
+    return os.path.abspath(os.path.expanduser(path))
+
 if __name__ == "__main__":
 
     logging.info("Loading config file: %s", sys.argv[1])
-    config = yaml.load(open(sys.argv[1]).read())
+    definition_file_path = canonical_path(sys.argv[1])
+    base_path = os.path.dirname(definition_file_path)
+    config = yaml.load(open(definition_file_path).read())
 
     file_pattern = config["file_pattern"]
     checker = check_type[config["type"]]
@@ -184,6 +190,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Find files that match
+    file_pattern = os.path.join(base_path, file_pattern)
     file_names = glob.glob(GlobFormatter().format(file_pattern))
     logging.info("Found %d files:\n %s",
                  len(file_names), pprint.pformat(file_names))
@@ -206,7 +213,7 @@ if __name__ == "__main__":
                           .format(field, field))
             sys.exit(1)
         for classification, classification_config in config["classifications"][field].items():
-            df_class = read_file(classification_config["file"])
+            df_class = read_file(os.path.join(base_path, classification_config["file"]))
             df_class = process_classification(df_class, classification_config)
             logging.info("Classification system for {}:\n {}"
                          .format(classification, df_class))
