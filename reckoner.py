@@ -1,9 +1,7 @@
-from collections import defaultdict
 import glob
 import os.path
 import re
 import sys
-import string
 import yaml
 import pprint
 
@@ -16,24 +14,7 @@ logging.addLevelName(logging.INFO, "\033[1;32m%s\033[1;0m" % logging.getLevelNam
 logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
 logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
 
-
-class GlobFormatter(string.Formatter):
-    def get_value(self, key, args, kwargs):
-        return "*"
-
-
-class RegexFormatter(string.Formatter):
-    UNIQ = '_UNIQUE_STRING_'
-
-    def get_value(self, key, args, kwargs):
-        return self.UNIQ + ('(?P<%s>.*?)' % key) + self.UNIQ
-
-    @staticmethod
-    def format_to_regex(pattern):
-        parts = RegexFormatter().format(pattern).split(RegexFormatter.UNIQ)
-        for i in range(0, len(parts), 2):
-            parts[i] = re.escape(parts[i])
-        return ''.join(parts)
+from helpers import GlobFormatter, RegexFormatter
 
 
 class Ecomplexity(object):
