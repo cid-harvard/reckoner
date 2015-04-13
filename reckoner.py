@@ -5,17 +5,7 @@ import sys
 import yaml
 import pprint
 
-import logging
-logging.basicConfig(
-    format='%(levelname)s:  %(message)s',
-    level=logging.INFO)
-logging.addLevelName(logging.INFO, "\033[1;32m%s\033[1;0m" %
-                     logging.getLevelName(logging.INFO))
-logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" %
-                     logging.getLevelName(logging.WARNING))
-logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" %
-                     logging.getLevelName(logging.ERROR))
-
+from log import log, INFO, WARNING, DEBUG, ERROR
 
 from helpers import GlobFormatter, RegexFormatter
 from helpers import (dtype_is_numeric, read_file, has_nulls, canonical_path)
@@ -26,14 +16,14 @@ from file_types import file_types
 def convert_column_type(col, digits=None, warnings=True):
     if dtype_is_numeric(col):
         if warnings:
-            logging.warning("""The classification code field {} is numeric,
-                            going to try to automatically convert it into a
-                            string.""".format(col.name))
+            log(WARNING, """The classification code field {} is numeric,
+                going to try to automatically convert it into a
+                string.""".format(col.name))
         if digits:
             col = col.map(lambda x: str(int(x)).zfill(digits))
             if warnings:
-                logging.warning("""Zero filling from the left to {}
-                                digits""".format(digits))
+                log(WARNING, """Zero filling from the left to {}
+                    digits""".format(digits))
         else:
             col = col.map(lambda x: str(int(x)))
     return col
@@ -52,15 +42,15 @@ def process_classification(df_class, classification_config):
         df_class = df_class[[code_field, name_field]]
 
         if has_nulls(df_class):
-            logging.error("""Classification mapping {} contains null values in
-                          relevant columns""".format(classification_config))
+            log(ERROR, """Classification mapping {} contains null values in
+                          relevant columns""", classification_config)
             sys.exit(1)
 
         # Convert codes to n-digit strings if necessary
-        df_class[code_field] = convert_column_type(df_class[code_field], digits)
+        df_class[code_field] = convert_column_type(df_class[code_field],
+                                                   digits)
 
         df_class = df_class.drop_duplicates()
-
 
     elif "code_fields" in classification_config:
 
@@ -71,8 +61,8 @@ def process_classification(df_class, classification_config):
         df_class = df_class[code_fields + [name_field]]
 
         if has_nulls(df_class):
-            logging.error("""Classification mapping {} contains null values in
-                          relevant columns""".format(classification_config))
+            log(ERROR, """Classification mapping {} contains null values in
+                relevant columns""".format(classification_config))
             sys.exit(1)
 
         # Fix up column types
@@ -91,8 +81,8 @@ def process_classification(df_class, classification_config):
         df_class = df_class[["generated_classification", name_field]]
 
     else:
-        logging.error("""Classification mapping {} must have a code_field or
-                         code_fields.""".format(classification_config))
+        log(ERROR, """Classification mapping {} must have a code_field or
+            code_fields.""".format(classification_config))
         sys.exit(1)
 
     # Rename columns
@@ -106,14 +96,14 @@ def process_classification(df_class, classification_config):
 
 if __name__ == "__main__":
 
-    logging.info("Loading config file: %s", sys.argv[1])
+    log(INFO, "Loading config file: %s", sys.argv[1])
     definition_file_path = canonical_path(sys.argv[1])
     base_path = os.path.dirname(definition_file_path)
     config = yaml.load(open(definition_file_path).read())
 
     file_pattern = config["file_pattern"]
     checker = file_types[config["type"]]
-    logging.info("Using file pattern: %s", file_pattern)
+    log(INFO, "Using file pattern: %s", file_pattern)
 
     # Verify we have enough field mappings defined for a data file of the given
     # type
@@ -121,21 +111,21 @@ if __name__ == "__main__":
     field_mappings.update(config["generated_fields"])
     missing_fields = checker.check_field_mappings(field_mappings)
     if len(missing_fields) != 0:
-        logging.error("Field mapping unspecified for: %s", missing_fields)
+        log(ERROR, "Field mapping unspecified for: %s", missing_fields)
         sys.exit(1)
 
     # Find files that match
     file_pattern = os.path.join(base_path, file_pattern)
     file_names = glob.glob(GlobFormatter().format(file_pattern))
-    logging.info("Found %d files:\n %s",
-                 len(file_names), pprint.pformat(file_names))
+    log(INFO, "Found %d files:\n %s",
+        len(file_names), pprint.pformat(file_names))
 
     # Extract data from filenames
     file_regex = RegexFormatter().format_to_regex(file_pattern)
     variations = [re.compile(file_regex).match(f).groupdict()
                   for f in file_names]
-    logging.info("Variations gathered from files:\n %s",
-                 pprint.pformat(variations))
+    log(INFO, "Variations gathered from files:\n %s",
+        pprint.pformat(variations))
 
     totals = {}
 
@@ -144,14 +134,14 @@ if __name__ == "__main__":
     classifications = {}
     for field in ["location", "entity"]:
         if field not in config["classifications"]:
-            logging.error("Please supply a classification for {} called {}."
-                          .format(field, field))
+            log(ERROR, "Please supply a classification for {} called {}."
+                .format(field, field))
             sys.exit(1)
         for classification, classification_config in config["classifications"][field].items():
             df_class = read_file(os.path.join(base_path, classification_config["file"]))
             df_class = process_classification(df_class, classification_config)
-            logging.info("Classification system for {}:\n {}"
-                         .format(classification, df_class))
+            log(INFO, "Classification system for {}:\n {}"
+                .format(classification, df_class))
             if field not in classifications:
                 classifications[field] = {}
             classifications[field][classification] = df_class
@@ -167,13 +157,15 @@ if __name__ == "__main__":
         field_mappings = {k: v.format(**variation) for k, v in field_mappings.items()}
         missing_fields, extra_fields = checker.check_fields(field_mappings, df)
         if len(missing_fields) != 0:
-            logging.error("File Name: %s, Missing fields: %s", file_name, missing_fields)
+            log(ERROR, "File Name: %s, Missing fields: %s",
+                file_name, missing_fields)
             sys.exit(1)
         if len(extra_fields) != 0:
-            logging.warning("File Name: %s, Extra fields: %s", file_name, extra_fields)
+            log(WARNING, "File Name: %s, Extra fields: %s",
+                file_name, extra_fields)
 
         # Standardize column names
-        df = df.rename(columns={v:k for k,v in field_mappings.items()})
+        df = df.rename(columns={v: k for k, v in field_mappings.items()})
 
         # TODO: standardize types?
 
@@ -188,7 +180,7 @@ if __name__ == "__main__":
         summary += "Number of null locations: {}\n".format(df.location.isnull().sum())
         summary += "Number of null entities: {}\n".format(df.entity.isnull().sum())
         summary += "Number of null values: {}".format(df.value.isnull().sum())
-        logging.info(summary)
+        log(INFO, summary)
 
         def get_classification_name(thing, variation, classifications):
             if thing not in variation:
@@ -255,7 +247,7 @@ if __name__ == "__main__":
             summary += "Percent value of nonmatching rows {}: {}\n".format(classification_name,
                                                                    percent_value_nonmerged)
             summary += "Nonmatching codes: {}\n".format(nonmerged_codes)
-            logging.info(summary)
+            log(INFO, summary)
 
         # Add current variation field value counts to running sum
         for k, v in variation.items():
@@ -267,4 +259,4 @@ if __name__ == "__main__":
     # Counts of locations / entities across files
     for item in totals:
         totals[item].sort(ascending=False)
-        logging.info("Value counts across all files for: {}\n{}".format(item, totals[item]))
+        log(INFO, "Value counts across all files for: {}\n{}".format(item, totals[item]))
