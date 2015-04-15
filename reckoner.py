@@ -20,10 +20,10 @@ def convert_column_type(col, digits=None, warnings=True):
                 going to try to automatically convert it into a
                 string.""".format(col.name))
         if digits:
-            col = col.map(lambda x: str(int(x)).zfill(digits))
             if warnings:
                 log(WARNING, """Zero filling from the left to {}
                     digits""".format(digits))
+            col = col.map(lambda x: str(int(x)).zfill(digits))
         else:
             col = col.map(lambda x: str(int(x)))
     return col
@@ -47,8 +47,8 @@ def process_classification(df_class, classification_config):
             sys.exit(1)
 
         # Convert codes to n-digit strings if necessary
-        df_class[code_field] = convert_column_type(df_class[code_field],
-                                                   digits)
+        df_class.loc[:, code_field] = convert_column_type(df_class[code_field],
+                                                          digits)
 
         df_class = df_class.drop_duplicates()
 
@@ -69,12 +69,14 @@ def process_classification(df_class, classification_config):
         for field in classification_config["code_fields"]:
             code_field = field["name"]
             digits = field.get("digits", None)
-            df_class[code_field] = convert_column_type(df_class[code_field], digits)
+            df_class.loc[:, code_field] = convert_column_type(
+                df_class[code_field],
+                digits)
 
         # Merge all the fields to get the code
         def add_str_fields(field):
             return "".join([field[f] for f in code_fields])
-        df_class["generated_classification"] =\
+        df_class.loc[:, "generated_classification"] =\
             df_class[code_fields].apply(add_str_fields, axis=1)
 
         # Return only the code and the name
