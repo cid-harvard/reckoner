@@ -14,18 +14,23 @@ it figure out what each column means, and then it:
 - etc.
 
 
-Installation
-============
+Usage on HMDC Cluster
+=====================
 
-- In a command line, run `curl https://raw.githubusercontent.com/cid-harvard/reckoner/master/reckoner.py > reckoner.py` to download the script.
-- Create a definition file in the same directory as your dataset
-- Then run it with `python tester.py path/to/your/definition_file_name.yml`
+The latest version of reckoner is already installed. All you have to do is to add a shortcut to save you some typing in the future:
+
+- From the HMDC menu on top, go to "RCE Powered Applications" and run "RCE shell".
+- Run `echo "alias reckoner='python ~/shared_space/cidgrowlab/reckoner/reckoner.py'" >> ~/.bashrc`.
+
+After you've done that once, you can just do:
+
+- Run `reckoner /path/to/definition_file.yml`!
 
 
 Tutorial
 =======
 
-Let's say that we have an imports / exports dataset with the following files:
+This will take you through creating a definition file. Let's say that we have an imports / exports dataset with the following files:
 
 ```
 ecomplexity_aduanas_est_2009.dta
