@@ -27,7 +27,12 @@ Example
 
 Reckoner requires a definition file for each dataset you want to check. The
 format is mostly `attribute_name:value`, with tabs to indicate sub elements and
-dashes to indicate list items. Here is the beginning of a real definition file:
+dashes to indicate list items.
+
+Specifying the dataset
+----------------------
+
+Here is the beginning of a real definition file:
 
 
 ```yaml
@@ -38,19 +43,21 @@ type: ecomplexity
 file_pattern: ecomplexity_aduanas_{location}_{year}.dta
 ```
 
-The first three fields are just general descriptions. The third field specifies
-the file type, and there are a few preset ones. Ecomplexity is one that matches
+- **name, description, source**: Just metadata, not used for checking.
+
+- **type**: There are a few preset ones. Ecomplexity is one that matches
 the output of our own STATA ecomplexity command. The types of checks that can
 be automatically run depend on the file type.
 
-The fifth field, the pattern, defines all the files in your dataset. It's
+- **pattern**: Defines all the files in your dataset. It's
 assumed that all your files have a uniform naming scheme. The parts between
-braces like `{location}` are a wildcard match. So, for example, it'll match the
-filename "ecomplexity_aduanas_est_2012.dta" and determine that for that file,
-`location` must be equal to `est` and `year` must be `2012`.
+braces like `{location}` are a wildcard match.
 
-Since we didn’t provide a wildcard in the filename for entities (in our case
-products), it will assume that there is only one level of product aggregation.
+In this example, it'll match the filename "ecomplexity_aduanas_est_2012.dta" and determine that for that file,
+`location` must be equal to `est` and `year` must be `2012`. Since we didn’t provide a wildcard in the filename for entities (in our case products), it will assume that there is only one level of product aggregation.
+
+Specifying the fields
+---------------------
 
 So now we can start specifying the field names:
 
@@ -72,20 +79,34 @@ generated_fields:
     year: "{year}"
 ```
 
-Don’t forget the indentation. For each field, the part on the left of the colon
+For each field, the part on the left of the colon
 is the field we’re expecting, and the one on the right is what it’s called in
 the files.
 
-Fields can be called different things in different files, and this is okay as
-long as it matches the file name wildcards - in this case the location is set
+> Don’t forget the indentation! Four spaces.
+
+Wildcards
+---------
+
+Field names can contain the wildcards that you specified in the file pattern, like `{location}`.
+
+This is useful because sometimes similar fields can be called different things in different files depending on the file type.
+
+As an example, in this case the location is set
 to `r_{location}` which renders to `r_mun` in municipality files (e.g.
 ecomplexity_aduanas_mun_2009.dta) and `r_est` in state files (e.g.
 ecomplexity_aduanas_est_2012.dta)
+
+Generated Fields
+----------------
 
 It’s also okay if a field is missing if it will have a single value: In this
 case `year` is in `generated_fields`. This gets around the issue that there
 isn’t a `year` column in the file, so it just fills it in from the file name
 wildcard again.
+
+Classifications
+---------------
 
 OK, now what are the locations, entities and years going to be checked against?
 You need to specify the classifications:
