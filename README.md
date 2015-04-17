@@ -219,8 +219,8 @@ See the complete example [here](https://github.com/cid-harvard/reckoner/blob/mas
 You can use this online [tester](http://yaml-online-parser.appspot.com/) to
 to see how your definition would be parsed.
 
-File Types
-==========
+Builtin File Types
+==================
 
 location_entity_value
 ---------------------
