@@ -22,8 +22,62 @@ Installation
 - Then run it with `python tester.py path/to/your/definition_file_name.yml`
 
 
-Example
+Tutorial
 =======
+
+Let's say that we have an imports / exports dataset with the following files:
+
+```
+ecomplexity_aduanas_est_2009.dta
+ecomplexity_aduanas_est_2010.dta
+ecomplexity_aduanas_est_2011.dta
+ecomplexity_aduanas_est_2012.dta
+ecomplexity_aduanas_est_2013.dta
+ecomplexity_aduanas_mun_2009.dta
+ecomplexity_aduanas_mun_2010.dta
+ecomplexity_aduanas_mun_2011.dta
+ecomplexity_aduanas_mun_2012.dta
+ecomplexity_aduanas_mun_2013.dta
+```
+
+The dataset spans from 2009 to 2013, and has state-level (est) and municipality-level (mun) aggregations. Here is what a state-level file looks like:
+
+```
+   r_est     p           V     O        rca  M   density       eci       pci  \
+0      1  8481    35594147  2255   1.755682  1  0.074099  0.741174  1.049106
+1      1  7326    19431734  3620   1.611489  1  0.073593  0.741174  2.243703
+2      1  6217     1872290   394  13.466545  1  0.087559  0.741174  0.965384
+3      1  3922     4565764   609   5.135397  1  0.076310  0.741174  0.736752
+4      1  8703  1530602882   236   7.222218  1  0.079454  0.741174 -0.203337
+
+   diversity  ubiquity       coi  cog    av_ubq  tag
+0         85        12  0.140593   -0  6.964706    1
+1         85         8  0.140593    0  6.964706    0
+2         85        12  0.140593   -0  6.964706    0
+3         85         5  0.140593   -0  6.964706    0
+4         85         6  0.140593   -0  6.964706    0
+
+```
+
+And similarly, here is the first few lines from a municipality level file:
+
+```
+   r_mun     p       V   O        rca  M   density       eci       pci  \
+0   1001  9604   45532  52  18.727618  1  0.056984  0.788259  0.602146
+1   1001  6005   76596   8   1.681844  1  0.057327  0.788259  1.009766
+2   1001  9803   37356   7  58.097737  1  0.057033  0.788259  1.359651
+3   1001  2206   67990   9   5.490546  1  0.056710  0.788259  0.497866
+4   1001  7606  147111  17   1.566195  1  0.056725  0.788259  1.026747
+
+   diversity  ubiquity       coi  cog     av_ubq  tag
+0         69        14  1.495513    0  29.376812    1
+1         69        30  1.495513    0  29.376812    0
+2         69         2  1.495513    0  29.376812    0
+3         69        11  1.495513    0  29.376812    0
+4         69        31  1.495513    0  29.376812    0
+```
+
+R_est and r_mun specify a state or a municipality code, p is a product code, V is the total amount of exports for that product in dollars, and there are a bunch of other variables.
 
 Reckoner requires a definition file for each dataset you want to check. The
 format is mostly `attribute_name:value`, with tabs to indicate sub elements and
@@ -56,8 +110,8 @@ braces like `{location}` are a wildcard match.
 In this example, it'll match the filename "ecomplexity_aduanas_est_2012.dta" and determine that for that file,
 `location` must be equal to `est` and `year` must be `2012`. Since we didn’t provide a wildcard in the filename for entities (in our case products), it will assume that there is only one level of product aggregation.
 
-Specifying the fields
----------------------
+Specifying field names
+----------------------
 
 So now we can start specifying the field names:
 
@@ -98,8 +152,10 @@ ecomplexity_aduanas_est_2012.dta)
 Generated Fields
 ----------------
 
-It’s also okay if a field is missing if it will have a single value: In this
-case `year` is in `generated_fields`. This gets around the issue that there
+It’s also okay if a field is missing if it will have a single value. We can
+automatically fill in the value of that field for each file.
+
+In this case `year` is in `generated_fields`. This gets around the issue that there
 isn’t a `year` column in the file, so it just fills it in from the file name
 wildcard again.
 
@@ -161,8 +217,10 @@ to see how your definition would be parsed.
 File Types
 ==========
 
-CPY
----
+location_entity_value
+---------------------
+A row from such a dataset would say, for example, "Germany (location) exported 5m dollars (value) worth of bicycles (entity)" or "Bogotá (location) has 50000 (value) workers in the medical industry (entity)".
+
 - Fields that can have different levels of aggregation:
   * location: a location code, at any aggregation level
   * entity: a product, industry, occupation code, or whatever else you might be using.
@@ -170,12 +228,17 @@ CPY
   * time: Time period identifier, usually a year like “2009”
   * value: the amount, whether in dollars, or currency, or number of workers, etc.
 
-Ecomplexity
+ecomplexity
 -----------
+Matches the output of the STATA `ecomplexity` command used at CID (some docs here: https://code.google.com/p/ecomplexity/source/browse/ecomplexity.sthlp)
+
 - Must have all the fields that CPY has, plus: 
-
-Reference
-=========
-
-type
----
+  * eci
+  * pci
+  * rca
+  * diversity
+  * density
+  * ubiquity: Ubiquity of an entity 
+  * average_ubiquity: Average ubiquity of the entities of a region 
+  * coi: complexity outlook index (i.e. opportunity value)
+  * cog: complexity outlook gain (i.e. opportunity gain)
