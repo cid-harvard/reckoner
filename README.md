@@ -83,14 +83,12 @@ For each field, the part on the left of the colon
 is the field we’re expecting, and the one on the right is what it’s called in
 the files.
 
-> Don’t forget the indentation! Four spaces.
+Don’t forget the indentation! Four spaces.
 
 Wildcards
 ---------
 
-Field names can contain the wildcards that you specified in the file pattern, like `{location}`.
-
-This is useful because sometimes similar fields can be called different things in different files depending on the file type.
+Field names can contain the wildcards that you specified in the file pattern, like `{location}`. This is useful because sometimes similar fields can be called different things in different files depending on the file type.
 
 As an example, in this case the location is set
 to `r_{location}` which renders to `r_mun` in municipality files (e.g.
@@ -113,6 +111,12 @@ You need to specify the classifications:
 
 ```yaml
 classifications:
+    entity:
+        hs4_4digit:
+            file: /Users/makmana/ciddata/mali_metadata/hs4.tsv
+            code_field: Code
+            name_field: hs4_name_en
+            digits: 4
     location:
         mun:
             file: NAMES_INEGI_MUNKEY_V2.dta
@@ -128,18 +132,13 @@ classifications:
             code_field: cve_ent
             name_field: nom_ent
             digits: 2
-    entity:
-        hs4_4digit:
-            file: /Users/makmana/ciddata/mali_metadata/hs4.tsv
-            code_field: Code
-            name_field: hs4_name_en
-            digits: 4
 ```
 
-As you can see, I’ve specified two different kinds of classifications, for
-locations and for entities. For locations, I made sure the names match the file
+As you can see, I’ve specified two different kinds of classifications, for the
+location and entity fields. For locations, I made sure the names match the file
 wildcards (est and mun), and for entity it doesn’t matter what it’s called
-since there is only one and that one will be used.
+since there is no entity wildcard in the file pattern. HS is only one so that
+one will be used.
 
 Each classification has a code_field that specifies the code to be matched in
 the file, and a name to match against, so it can show you nice results. It also
