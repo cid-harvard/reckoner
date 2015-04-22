@@ -13,6 +13,8 @@ it figure out what each column means, and then it:
 - Shows you nonmatching identifiers
 - etc.
 
+Here is an example of the output from testing some real life data: https://gist.github.com/makmanalp/5ebcacdcf6c541bdd549
+
 
 Usage on HMDC Cluster
 =====================
