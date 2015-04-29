@@ -41,5 +41,5 @@ class CPY(FileType):
 
 file_types = {
     "ecomplexity": Ecomplexity(),
-    "cpy": CPY()
+    "location-entity-year": CPY()
 }
