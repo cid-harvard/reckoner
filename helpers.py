@@ -45,6 +45,8 @@ def read_file(file_name):
         "csv": pd.read_csv,
         "tsv": pd.read_table,
         "txt": pd.read_table,
+        "xlsx": pd.read_excel,
+        "xls": pd.read_excel,
     }
     extension = file_name.rsplit(".", 1)[-1]
     return read_commands[extension](file_name)
