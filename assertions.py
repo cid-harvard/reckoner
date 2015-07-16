@@ -58,7 +58,7 @@ def fillin(df, entities):
         pd.MultiIndex.from_product(df.index.levels, names=df.index.names))
 
 
-def assert_filled_in(df, entities):
+def assert_rectangularized(df, entities):
     """Check if all possibilities of all entities have been used"""
     filled_in = fillin(df, entities).reset_index()
     for entity in entities:
