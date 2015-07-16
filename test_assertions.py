@@ -30,9 +30,20 @@ def test_matching_classifications():
         assertions.assert_matches_classification_level(df[field], level)
 
 
-# Thoughts:
-# - Dataset class
-# - Layered approach: pandas -> assertions -> classification specific reckoner assertions -> reckoner
-# - Write your own intervention.py or whatever that runs and edits the dataframe right before assertions run
-# - Test case output - quality metrics?
-# - pytest_generate_assertions is key
+def test_matching_stats():
+    classifications = {
+        "i": industry_classification.level("class"),
+        "r": location_classification.level("department")
+    }
+
+    for field, level in classifications.items():
+        (percent_nonmatch_rows, percent_nonmatch_unique, codes_missing,
+         codes_unused) = assertions.matching_stats(df[field], level)
+        assert percent_nonmatch_rows == 0
+        assert percent_nonmatch_unique == 0
+        assert codes_missing.empty
+        assert codes_unused.empty
+
+
+def test_rectangularized():
+    assertions.assert_filled_in(df, ["i", "r", "year"])
