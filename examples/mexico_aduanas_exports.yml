@@ -2,7 +2,7 @@
 name: mexico_aduanas
 description: Mexico trade data, imports 2009-2013
 source: INEGI
-file_pattern: "ecomplexity_aduanas_{location}_{year}.dta"
+file_pattern: "/Users/makmana/ciddata/Mexico/data/ecomplexity_aduanas_{location}_{year}.dta"
 type: ecomplexity
 fields:
     location: "r_{location}"
