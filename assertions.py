@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+from functools import reduce
+from operator import mul
+
 
 def num_missing(series):
     return series.isnull().sum()
@@ -60,9 +63,16 @@ def fillin(df, entities):
 
 def assert_rectangularized(df, entities):
     """Check if all possibilities of all entities have been used"""
-    filled_in = fillin(df, entities).reset_index()
-    for entity in entities:
-        assert_none_missing(filled_in[entity])
+    unique_entities = [df[entity].size for entity in entities]
+    uniques_multiplied = reduce(mul, unique_entities)
+
+    # In a rectangularized matrix, the number of unique entities multiplied
+    # should give you the number of rows
+    assert uniques_multiplied == df.shape[0]
+
+
+def assert_entities_not_duplicated(df, entities):
+    assert df.duplicated(subset=entities).any() == False
 
 
 # Thoughts:
