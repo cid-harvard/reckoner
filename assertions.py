@@ -23,10 +23,11 @@ def assert_is_zeropadded_string(series):
     assert (series.str.len().nunique() == 1)
 
 
-def matching_stats(series, classification_level):
+def matching_stats(series, classification_level, assertions=False):
 
-    assert_is_zeropadded_string(series)
-    assert_is_zeropadded_string(classification_level.code)
+    if assertions:
+        assert_is_zeropadded_string(series)
+        assert_is_zeropadded_string(classification_level.code)
 
     num_rows = series.shape[0]
 
